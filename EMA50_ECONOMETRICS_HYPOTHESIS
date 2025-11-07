@@ -1,0 +1,179 @@
+#  Forex Market Efficiency Test using Random Walk Hypothesis
+#  EMA50 Predictability — CHFJPY Example
+
+import MetaTrader5 as mt5
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+from statsmodels.tsa.stattools import adfuller, kpss
+import matplotlib.pyplot as plt
+import os
+
+
+# 1. First Step is "Connecting to METATRADER 5" where MT5 runs on OANDA broker which is widely used by Traders
+
+
+mt5_path = r"C:\Program Files\OANDA MetaTrader 5\terminal64.exe"
+
+if not mt5.initialize(path=mt5_path):
+    print("MT5 connection failed:", mt5.last_error())
+    quit()
+else:
+    print("MT5 successfully connected to account!")
+    print(mt5.account_info())
+
+
+# 2. PARAMETERS, to test, I am using CHFJPY currency pairs
+
+symbol = "CHFJPY"
+timeframes = {"D1": mt5.TIMEFRAME_D1, "W1": mt5.TIMEFRAME_W1}
+n_bars = 1000
+save_path = os.path.expanduser(r"C:\Users\jrdiy\OneDrive\Рабочий стол\TEST_EMA\Daily_and_Weekly_Econometric_CHFJPY")
+os.makedirs(save_path, exist_ok=True)
+
+summary_results = []  # for Excel summary
+interpretations = []  # for text report
+
+
+# 3.This section is where technical analysis are implemend on the basis of econometric analysis
+
+
+def get_data(tf_name, tf_code):
+    rates = mt5.copy_rates_from_pos(symbol, tf_code, 0, n_bars)
+    df = pd.DataFrame(rates)
+    df["time"] = pd.to_datetime(df["time"], unit="s")
+    df.set_index("time", inplace=True)
+    df["close"] = df["close"].astype(float)
+    return df
+
+def prepare_data(df):
+    df["return"] = np.log(df["close"] / df["close"].shift(1))
+    df["ema50"] = df["close"].ewm(span=50, adjust=False).mean()
+    df["ema_signal"] = np.where(df["close"] > df["ema50"], 1, 0)
+    return df.dropna()
+
+def plot_graphs(df, tf_name):
+    """Save price–EMA and ACF plots."""
+    plt.figure(figsize=(10,5))
+    plt.plot(df.index, df["close"], label="Price", linewidth=1.3)
+    plt.plot(df.index, df["ema50"], label="EMA-50", linewidth=1.2)
+    plt.title(f"{symbol} {tf_name} Price vs EMA-50")
+    plt.legend(); plt.grid(True)
+    plt.tight_layout()
+    plt.savefig(f"{save_path}\\{symbol}_{tf_name}_price_ema.png")
+    plt.close()
+
+    fig, ax = plt.subplots(figsize=(8,4))
+    sm.graphics.tsa.plot_acf(df["return"], lags=20, ax=ax)
+    ax.set_title(f"{symbol} {tf_name} Return Autocorrelation (ACF)")
+    plt.tight_layout()
+    plt.savefig(f"{save_path}\\{symbol}_{tf_name}_acf.png")
+    plt.close()
+
+def interpret_results(tf_name, adf_r, phi, phi_p, dw, beta_p):
+    """Automatic interpretation of econometric results."""
+    text = f"\n=== {tf_name} Timeframe ===\n"
+    if adf_r < 0.05:
+        text += "- ADF rejects unit root → returns are stationary → short-term predictability possible.\n"
+    else:
+        text += "- ADF fails to reject unit root → returns behave like a random walk.\n"
+
+    if phi_p < 0.05 and phi > 0:
+        text += f"- Positive autocorrelation (φ={phi:.2f}) → momentum → weak-form inefficiency.\n"
+    elif phi_p < 0.05 and phi < 0:
+        text += f"- Negative autocorrelation (φ={phi:.2f}) → mean reversion tendency.\n"
+    else:
+        text += "- No significant autocorrelation → market efficient (no momentum).\n"
+
+    if dw < 2:
+        text += f"- Durbin–Watson={dw:.2f} (<2) → confirms positive serial correlation.\n"
+    elif dw > 2:
+        text += f"- Durbin–Watson={dw:.2f} (>2) → negative correlation (mean reversion).\n"
+    else:
+        text += f"- Durbin–Watson={dw:.2f} ≈2 → returns are independent.\n"
+
+    if beta_p < 0.05:
+        text += "- EMA signal significantly predicts returns → EMA strategy is statistically justified.\n"
+    else:
+        text += "- EMA signal not significant → EMA not predictive (market efficient).\n"
+
+    return text
+
+def run_tests(df, tf_name):
+    """Run econometric tests, save data, plots, and summary."""
+    results = {"Timeframe": tf_name}
+
+    #ADF and KPSS
+    adf_p = adfuller(df["close"], autolag="AIC")[1]
+    adf_p_r = adfuller(df["return"], autolag="AIC")[1]
+    kpss_p_r = kpss(df["return"], regression="c", nlags="auto")[1]
+    results.update({"ADF_price_p": adf_p, "ADF_return_p": adf_p_r, "KPSS_return_p": kpss_p_r})
+
+    # AR(1) regression 
+    y = df["return"].iloc[1:]
+    X = sm.add_constant(df["return"].shift(1).iloc[1:])
+    ar1 = sm.OLS(y, X).fit()
+    phi, phi_p = ar1.params.iloc[1], ar1.pvalues.iloc[1]
+    dw = sm.stats.stattools.durbin_watson(ar1.resid)
+    results.update({"phi": phi, "phi_p": phi_p, "DW": dw})
+
+    #EMA predictive regression
+    X2 = sm.add_constant(df[["return"]].shift(1).join(df["ema_signal"]).dropna())
+    y2 = df["return"].loc[X2.index]
+    ema_reg = sm.OLS(y2, X2).fit()
+    beta_p = ema_reg.pvalues["ema_signal"]
+    results.update({"beta_ema_p": beta_p, "R2_ema": ema_reg.rsquared})
+
+    #Save Excel files 
+    df_fixed = df.copy()
+    df_fixed.reset_index(inplace=True)
+    df_fixed.rename(columns={"time": "datetime"}, inplace=True)
+    df_fixed["datetime"] = df_fixed["datetime"].astype(str)
+    excel_file = f"{save_path}\\{symbol}_{tf_name}_data.xlsx"
+    df_fixed.to_excel(excel_file, index=False)
+    print(f"Saved Excel file: {excel_file}")
+
+    #Plots
+    plot_graphs(df, tf_name)
+    print(f" Saved plots for {tf_name}")
+
+    #Store results
+    summary_results.append(results)
+
+    #Interpretation 
+    text = interpret_results(tf_name, adf_p_r, phi, phi_p, dw, beta_p)
+    interpretations.append(text)
+
+
+# 4. Loops through each TimeFrame, in this case, H1 and H4
+
+
+for name, code in timeframes.items():
+    print(f"\n================ {name} TIMEFRAME ================")
+    df = get_data(name, code)
+    df = prepare_data(df)
+    run_tests(df, name)
+
+
+
+# 5. Saving Summary and Interpretation
+
+summary_df = pd.DataFrame(summary_results)
+summary_df.to_excel(f"{save_path}\\summary_results.xlsx", index=False)
+
+#interpretations
+with open(f"{save_path}\\interpretation_summary.txt", "w", encoding="utf-8") as f:
+    f.write("AUTOMATIC INTERPRETATION REPORT — CHFJPY EMA-50 Analysis\n")
+    f.write("=========================================================\n")
+    for txt in interpretations:
+        f.write(txt + "\n")
+
+print(f"\n Summary table saved to: {save_path}\\summary_results.xlsx")
+print(f" Interpretation text saved to: {save_path}\\interpretation_summary.txt")
+
+
+# 6. CLOSE MT5
+
+
+mt5.shutdown()
+print("\n All analyses complete! Excel, summary table, plots, and interpretation report.")
