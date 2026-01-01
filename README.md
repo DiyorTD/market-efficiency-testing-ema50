@@ -59,7 +59,7 @@ While the econometric audit tests for *statistical* significance, the bot tests 
 
 * **Signal Logic:** Uses a confluence of EMA-50 trend filtering and Candlestick Pattern Recognition (Doji, High-Wave).
 * **Risk Optimization:** Incorporates volatility indices to dynamically adjust position sizing, reducing downside drawdown by ~11%.
-* **Performance:** The backtesting engine (built with `Backtesting.py`) suggests a forecast precision improvement of 5–8% in specific volatility regimes, despite the high efficiency of the broader market.
+* **Performance:** The backtesting engine, MetaTrader5 OANDA broker, suggests a forecast precision improvement of 5–8% in specific volatility regimes, despite the high efficiency of the broader market.
 
 ---
 
