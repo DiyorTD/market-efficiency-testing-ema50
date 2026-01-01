@@ -21,6 +21,7 @@ Unlike standard trading bots that rely solely on backtesting, this project subje
 | :--- | :--- | :--- |
 | `Econometric_Validation_Report.pdf` | Full academic paper auditing the strategy's predictive power. | **Weak-form EMH**, **Stationarity (ADF/KPSS)**, **AR(1) Processes**, **Predictive Regression**. |
 | `Project_Hypothesis_and_Methodology.pdf` | Operational framework and hypothesis formulation. | **Random Walk Hypothesis**, **Volatility Clustering**, **Look-ahead Bias**, **Lagged Covariance**. |
+| **Empirical Data** | `CHFJPY_H1_data_n2000.xlsx`<br>`CHFJPY_H4_data_n2000.xlsx`<br>`CHFJPY_D1_data_n1000.xlsx`<br>`CHFJPY_W1_data_n1000.xlsx` | **Raw Candlestick Data Sources:** Historical OHLC (Open-High-Low-Close) data used to evaluate market efficiency across different time horizons (1-Hour to Weekly). |
 | `trading_bot.py` *(example)* | The execution algorithm. | **Pattern Recognition**, **Risk Management**, **EMA Crossovers**. |
 
 ---
