@@ -1,66 +1,73 @@
-EMA-50 Market Efficiency and Forecasting Bot
+# EMA-50 Market Efficiency and Forecasting Bot
 
-This repository presents an empirical and algorithmic investigation of the market efficiency and predictability of the CHF/JPY currency pair and selected assets from Forex and U.S. equities.
-The study integrates econometric testing and data-driven trading algorithms to examine whether EMA-based signals carry statistically significant predictive power in financial markets.
+### An Econometric & Algorithmic Investigation of FX Market Predictability
 
-Overview
+This repository presents a dual-track investigation into the market efficiency of the **CHF/JPY** currency pair. It integrates a Python-based algorithmic trading system with a rigorous **Applied Econometrics** audit to determine if EMA-based technical signals possess statistically significant predictive power or if the market follows a Random Walk.
 
-The project implements data-driven trading strategies based on Exponential Moving Average (EMA) crossovers and candlestick pattern recognition, maintaining a consistent positive return on investment (ROI) across 4-hour and daily (1D) timeframes.
-It also evaluates the econometric properties of these trading signals using formal statistical tests and incorporates portfolio-level risk controls.
+---
 
-Key Components
-1. EMA-Based Trading Bot
+## 👨‍💻 About the Project
 
-A Python-based trading system was designed and backtested to evaluate the predictive performance of EMA crossovers.
-The model improved forecast precision by 5–8%, achieved an overall 13% return, and automated risk-reward evaluation across multiple trading sessions.
+Unlike standard trading bots that rely solely on backtesting, this project subjects its signals to formal hypothesis testing. It contrasts the **practical ROI** of a trading algorithm against the **theoretical constraints** of the Efficient Market Hypothesis (EMH).
 
-2. Econometric Evaluation
+### Core Research Question
+*Does the 50-period Exponential Moving Average (EMA-50) contain embedded information that can statistically forecast future log-returns, or are the returns a "Fair Game" process as defined by Fama (1970)?*
 
-The project investigates the CHF/JPY currency pair across multiple timeframes (H1, H4, D1, W1) using standard econometric diagnostics:
+---
 
-Augmented Dickey–Fuller (ADF) test for stationarity
+## 📂 Repository Contents
 
-Autocorrelation Function (ACF) for serial dependence
+| File Name | Description | Key Econometric Concepts |
+| :--- | :--- | :--- |
+| `Econometric_Validation_Report.pdf` | Full academic paper auditing the strategy's predictive power. | **Weak-form EMH**, **Stationarity (ADF/KPSS)**, **AR(1) Processes**, **Predictive Regression**. |
+| `Project_Hypothesis_and_Methodology.pdf` | Operational framework and hypothesis formulation. | **Random Walk Hypothesis**, **Volatility Clustering**, **Look-ahead Bias**, **Lagged Covariance**. |
+| `trading_bot.py` *(example)* | The execution algorithm. | **Pattern Recognition**, **Risk Management**, **EMA Crossovers**. |
 
-Durbin–Watson (DW) statistic for autocorrelation in residuals
+---
 
-These tests assess whether price returns follow a random walk and whether EMA-based signals capture inefficiencies.
+## 📊 Econometric Methodology
 
-3. Portfolio Risk Optimization
+To validate the "scientific" legitimacy of the trading signals, I applied the following econometric diagnostics (detailed in `Econometric_Validation_Report.pdf`):
 
-Volatility indices and drawdown limits were incorporated into portfolio management, reducing downside risk exposure by approximately 11% while maintaining the desired risk-adjusted performance.
+### 1. Stationarity & Random Walk Tests
+Financial time series often exhibit non-stationary behavior (unit roots). I validated the data properties using:
+* **Augmented Dickey-Fuller (ADF) Test:** Used to reject the Null Hypothesis of a unit root in log-returns ($p < 0.01$).
+* **KPSS Test:** Used to confirm stationarity around a deterministic trend.
+* *Result:* Prices ($P_t$) follow a Random Walk, while Returns ($r_t$) are stationary.
 
-Methodology
+### 2. Serial Correlation (Memory) Analysis
+I tested for market "memory" (inefficiency) using:
+* **Autocorrelation Function (ACF):** To detect if past returns ($r_{t-k}$) influence current returns.
+* **AR(1) Regression:** Modeled as $r_t = \alpha + \phi r_{t-1} + u_t$ to estimate the persistence coefficient $\phi$.
+* **Durbin-Watson Statistic:** To detect autocorrelation in the residuals of the predictive model.
 
-Data Collection
-Historical OHLC data were obtained from MetaTrader 5 for multiple timeframes (H1–W1).
+### 3. Predictive Power Evaluation
+A formal regression analysis was conducted:
+$$r_{t+1} = \beta_0 + \beta_1 \cdot \text{Signal}_t + \epsilon_{t+1}$$
+* **Objective:** Determine if the $\beta_1$ coefficient for the EMA-Signal is statistically significantly different from zero.
 
-Signal Generation
-EMA-50 crossover and candlestick confirmations were used to identify entry and exit points.
+---
 
-Backtesting
-The strategy was evaluated in Python using Pandas, NumPy, and Matplotlib, focusing on ROI, Sharpe ratio, and drawdown analysis.
+## 🤖 Algorithmic Implementation
 
-Econometric Testing
-Statistical validation of the EMA-50 signal was conducted using Statsmodels (ADF, ACF, DW).
+While the econometric audit tests for *statistical* significance, the bot tests for *economic* significance (profitability after costs).
 
-Results Summary
-Metric	Result
-Forecast Precision	+5 – 8 %
-Total Return on Investment	13 %
-Downside Risk Reduction	11 %
-Timeframes Tested	H1, H4, D1, W1
-Statistical Tests Used	ADF, ACF, Durbin–Watson
-Technical Stack
+* **Signal Logic:** Uses a confluence of EMA-50 trend filtering and Candlestick Pattern Recognition (Doji, High-Wave).
+* **Risk Optimization:** Incorporates volatility indices to dynamically adjust position sizing, reducing downside drawdown by ~11%.
+* **Performance:** The backtesting engine (built with `Backtesting.py`) suggests a forecast precision improvement of 5–8% in specific volatility regimes, despite the high efficiency of the broader market.
 
-Programming Language: Python
+---
 
-Libraries: Pandas, NumPy, Statsmodels, Matplotlib, Backtesting.py
+## 🛠 Technical Stack & Libraries
 
-Data Source: MetaTrader 5
+* **Econometrics:** `Statsmodels` (ADF, OLS regression), `SciPy`
+* **Data Science:** `Pandas`, `NumPy`, `Matplotlib` (Visualization)
+* **Trading:** `MetaTrader 5 API` (Data sourcing), `Backtesting.py`
 
-Tools: Jupyter Notebook, Excel
+---
 
-Citation
+## 📜 Citation
 
-Tulanov, D. (2025). EMA-50 Market Efficiency Analysis: An Econometric Evaluation of CHF/JPY Predictability.
+If you use the methodology or code from this repository, please cite the enclosed research:
+
+> **Tulanov, D. (2025).** *Technical Analysis, Market Efficiency, and the Predictive Power of EMA-50 in the CHFJPY Foreign Exchange Market.* Seoul National University, Department of Economics.
