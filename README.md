@@ -67,7 +67,7 @@ While the econometric audit tests for *statistical* significance, the bot tests 
 
 * **Econometrics:** `Statsmodels` (ADF, OLS regression), `SciPy`
 * **Data Science:** `Pandas`, `NumPy`, `Matplotlib` (Visualization)
-* **Trading:** `MetaTrader 5 API` (Data sourcing), `Backtesting.py`
+* **Trading:** `MetaTrader 5 API` (Data sourcing): MetaTrader5 OANDA broker
 
 ---
 
