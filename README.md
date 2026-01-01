@@ -43,8 +43,13 @@ I tested for market "memory" (inefficiency) using:
 
 ### 3. Predictive Power Evaluation
 A formal regression analysis was conducted:
-$$r_{t+1} = \beta_0 + \beta_1 \cdot \text{Signal}_t + \epsilon_{t+1}$$
-* **Objective:** Determine if the $\beta_1$ coefficient for the EMA-Signal is statistically significantly different from zero.
+
+$$
+r_{t+1} = \beta_0 + \beta_1 \cdot \text{Signal}_t + \epsilon_{t+1}
+$$
+
+- **Objective:** Determine if the $\beta_1$ coefficient for the EMA-Signal is statistically significantly different from zero.
+
 
 ---
 
