@@ -76,4 +76,4 @@ While the econometric audit tests for *statistical* significance, the bot tests 
 
 If you use the methodology or code from this repository, please cite the enclosed research:
 
-> **Tulanov, D. (2025).** *Technical Analysis, Market Efficiency, and the Predictive Power of EMA-50 in the CHFJPY Foreign Exchange Market.* Seoul National University, Department of Economics.
+
