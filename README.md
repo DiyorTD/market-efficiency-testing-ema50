@@ -72,8 +72,4 @@ While the econometric audit tests for *statistical* significance, the bot tests 
 
 ---
 
-## 📜 Citation
-
-If you use the methodology or code from this repository, please cite the enclosed research:
-
 
